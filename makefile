@@ -2,6 +2,12 @@ OUTFOLDER=compiledMuM
 MUMFOLDER=MuM
 compile:
 	echo "Compilando CybrusJam..."
+	g++ -g -D__LINUX_ALSA__ -o CYBRUSJAM cybrusMain.cpp baixoAnalise.cpp guitarrista.cpp $(OUTFOLDER)/MuUtil.o $(OUTFOLDER)/MuError.o $(OUTFOLDER)/MuParamBlock.o $(OUTFOLDER)/MuNote.o $(OUTFOLDER)/MuVoice.o $(OUTFOLDER)/MuMaterial.o $(OUTFOLDER)/MuPlayer.o $(OUTFOLDER)/MuRecorder.o $(MUMFOLDER)/RtMidi.cpp -lasound -lpthread
+	echo "Alterando permissoes do arquivo executavel..."
+	chmod 755 CYBRUSJAM
+
+compileFULL:
+	echo "Compilando CybrusJam..."
 	g++ -g -D__LINUX_ALSA__ -o CYBRUSJAM cybrusMain.cpp $(OUTFOLDER)/MuUtil.o $(OUTFOLDER)/MuError.o $(OUTFOLDER)/MuParamBlock.o $(OUTFOLDER)/MuNote.o $(OUTFOLDER)/MuVoice.o $(OUTFOLDER)/MuMaterial.o $(OUTFOLDER)/MuPlayer.o $(OUTFOLDER)/MuRecorder.o $(MUMFOLDER)/RtMidi.cpp -lasound -lpthread
 	echo "Alterando permissoes do arquivo executavel..."
 	chmod 755 CYBRUSJAM
