@@ -13,6 +13,9 @@ class Baterista{
     private:
         MuMaterial* materialBaixo;
         MuMaterial batidas;
+
+        MuNote bumbo;
+        MuNote caixa;
     public:
         Baterista();
         Baterista(MuMaterial*);

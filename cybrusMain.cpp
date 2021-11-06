@@ -6,7 +6,7 @@ using namespace std;
 #include "MuM/MuPlayer.h"
 #include "baixoAnalise.h"
 #include "guitarrista.h"
-// #include "baterista.h"
+#include "baterista.h"
 
 int main(){
     //--------------Menu Inicial (parâmetros da sessão), opções de execução
@@ -19,7 +19,7 @@ int main(){
     int BPMmetronomo, repeticoes;
     BaixoAnalise* bAnalise;
     Guitarrista* guitarra;
-    // Baterista* baterista;
+    Baterista* bateria;
 
 
     cout  << "Carregando Recorder..." << endl;
@@ -93,8 +93,8 @@ int main(){
                         bAnalise->AnaliseFase1(repeticoes);
                         guitarra = new Guitarrista(bAnalise->GetMaterial());
                         guitarra->GerarAcompanhamento();
-                        // bateria = new Baterista(bAnalise->GetMaterial());
-                        // bateria->GerarAcompanhamento();
+                        bateria = new Baterista(bAnalise->GetMaterial());
+                        bateria->GerarAcompanhamento();
                     }
                 }
             }

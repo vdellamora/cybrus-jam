@@ -50,12 +50,10 @@ void Guitarrista::GerarAcompanhamento(){
                     //triade.Show();
                     // out.Play(triade,PLAYBACK_MODE_NORMAL);
                     encontrouNota = true;
-                    break;
                 }
             }
         }
     }
-    cout << "Vozes material: " << materialBaixo->NumberOfVoices() << endl;
     materialBaixo->Show();
 }
 
