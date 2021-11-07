@@ -33,7 +33,7 @@ void Guitarrista::GerarAcompanhamento(){
                 // Se a nota do baixo [n] for a nota tônica do acorde [noteChord], encontramos nosso acorde de acompanhamento
                 if(noteChord.Pitch()%12 == n.Pitch()%12){
                     MuMaterial triade = acordes.GetVoice(k);
-                    triade.SetAmp(0,0.5);
+                    triade.SetAmp(0,1);
                     //triade.SetInstrument(0,GUITARRA_INSTRUMENTO);
                     //triade.SetStarts(0, n.Start());
                     triade.SetLengths(0,n.Dur());
@@ -42,7 +42,7 @@ void Guitarrista::GerarAcompanhamento(){
                         noteChord = triade.GetNote(0, l);
                         noteChord.SetStart(n.Start());
                         // noteChord.SetInstr(GUITARRA_INSTRUMENTO);
-                        materialBaixo->Append(1, noteChord);
+                        materialBaixo->IncludeNote(1, noteChord);
                         
                         // note.SetPitch(inPitch);
                         // triade.SetNote(1, l, note);

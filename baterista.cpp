@@ -32,7 +32,7 @@ void Baterista::GerarAcompanhamento(){
         
         beat.SetDur(n.Dur());
         beat.SetStart(n.Start());
-        materialBaixo->Append(canalBateria, beat);
+        materialBaixo->IncludeNote(canalBateria, beat);
     }
     materialBaixo->Show();
 }

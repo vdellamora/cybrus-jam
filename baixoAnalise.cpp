@@ -30,12 +30,13 @@ void BaixoAnalise::AnaliseFase1(int repeticoes){
     float inicioNota = 0;
 
     int notas = materialMusical->NumberOfNotes();
-    for(int i = 0; i < notas; i++){
-        MuNote n = materialMusical->GetNote(i);
-        duracaoMediaNota += n.Dur();
+    for(int i = 0; i < notas-1; i++){
+        MuNote n1 = materialMusical->GetNote(i);
+        MuNote n2 = materialMusical->GetNote(i+1);
+        duracaoMediaNota += n2.Start() - n1.Start();
 
     }
-    duracaoMediaNota /= materialMusical->NumberOfNotes();
+    duracaoMediaNota /= notas-1;
     for(int i = 0; i < notas; i++){
         MuNote n = materialMusical->GetNote(i);
         n.SetStart(inicioNota);

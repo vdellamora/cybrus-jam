@@ -5,8 +5,8 @@ using namespace std;
 
 #include <iostream>
 #include "MuM/MuMaterial.h"
-#define BATERIA_INSTRUMENTO_A 35
-#define BATERIA_INSTRUMENTO_B 38
+#define BATERIA_INSTRUMENTO_A 10
+#define BATERIA_INSTRUMENTO_B 11
 // Utilizar canal 10 do MIDI
 
 class Baterista{
