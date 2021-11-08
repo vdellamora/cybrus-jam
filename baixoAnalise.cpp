@@ -2,10 +2,12 @@ using namespace std;
 
 #include "baixoAnalise.h"
 BaixoAnalise::BaixoAnalise(){
+    duracaoMaterial = 0;
     materialMusical = new MuMaterial();
 
 }
 BaixoAnalise::BaixoAnalise(MuMIDIBuffer buffer){
+    duracaoMaterial = 0;
     cout << "baixoAnalise iniciado" << endl;
     materialMusical = new MuMaterial();
     this->CarregarFase1(buffer);
@@ -37,6 +39,7 @@ void BaixoAnalise::AnaliseFase1(int repeticoes){
 
     }
     duracaoMediaNota /= notas-1;
+    duracaoMaterial = duracaoMediaNota * notas;
     for(int i = 0; i < notas; i++){
         MuNote n = materialMusical->GetNote(i);
         n.SetStart(inicioNota);
@@ -59,4 +62,8 @@ void BaixoAnalise::ImprimirMaterial(){
 
 MuMaterial* BaixoAnalise::GetMaterial(){
     return materialMusical;
+}
+
+double BaixoAnalise::GetDuracao(){
+    return duracaoMaterial;
 }

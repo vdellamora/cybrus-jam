@@ -138,6 +138,7 @@ int main(){
     //---Acordes e Percussão -> MuPlayer
         // O MuPlayer receberá os materiais de saída da guitarra, bateria e metrônomo para dar o acompanhamento ao usuário
     output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
+    double inicioPlayer = currTime();
     terminaExecucao = false;
 
     MuMIDIBuffer materialFase2;
@@ -147,12 +148,18 @@ int main(){
     materialFase2 = input.GetData();
     cout << "Iniciando acompanhamento (fique 5 segundos sem tocar para finalizar)" << endl;
     double ultimaNota = currTime();
-    cout << "Tempo inicial: " << ultimaNota << endl;
     while(!terminaExecucao){
         usleep(100);
         materialFase2 = input.GetData();
 
         // TODO: Loop de checagem se a execução terminou e colocar pra tocar novamente
+        if(currTime() - inicioPlayer >= bAnalise->GetDuracao()){
+            cout << "Reiniciando acompanhamento... " << endl;
+            // output.Stop();
+            // usleep(100);
+            output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
+            inicioPlayer = currTime();
+        }
 
         // Checar se está há 5 segundos sem tocar
         if(materialFase2.count){
@@ -166,7 +173,7 @@ int main(){
                 // Atualiza o tempo da última nota
                 if((msg.status == MU_NOTE_ON) && (msg.data2 > 0)){
                     ultimaNota = currTime();
-                    cout << "Atualizei: " << ultimaNota << endl;
+                    // cout << "Atualizei: " << ultimaNota << endl;
 
                 }
 
