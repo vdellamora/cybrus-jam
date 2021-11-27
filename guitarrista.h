@@ -5,7 +5,7 @@ using namespace std;
 
 #include <iostream>
 #include "MuM/MuMaterial.h"
-#define GUITARRA_INSTRUMENTO 3
+#define GUITARRA_CANAL 2
 
 class Guitarrista{
     private:

@@ -20,7 +20,6 @@ void BaixoAnalise::CarregarFase1(MuMIDIBuffer buffer){
     materialMusical->LoadMIDIBuffer(buffer, MIDI_BUFFER_MODE_EXTEND);
     //LoadMidiBuffer materialFase1
     cout << "baixoAnalise Fase1 Carregada" << endl;
-    // materialMusical->Show();
 }
 
 //---Análise do MIDI, reconhecimento de ritmo e altura
@@ -48,7 +47,7 @@ void BaixoAnalise::AnaliseFase1(int repeticoes){
         inicioNota += duracaoMediaNota;
 
 
-        materialMusical->SetNote(0,i,n);
+        materialMusical->SetNote(0,i,n); // algumas paradas consideram amp 0 como pausa, isso pode dar errado depois
     }
 
     // pitch /12 + 3 == Notação CSound

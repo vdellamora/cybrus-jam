@@ -16,15 +16,14 @@ void Baterista::CarregarMaterialBaixo(MuMaterial* materialBaixo){
 void Baterista::GerarAcompanhamento(){
     cout << "Gerando o acompanhamento do baterista..." << endl;
     materialBaixo->AddVoices(1);
-    int canalBateria = materialBaixo->NumberOfVoices()-1;
-    materialBaixo->SetInstrument(canalBateria,BATERIA_INSTRUMENTO_A);
+    int vozBateria = materialBaixo->NumberOfVoices()-1;
+    materialBaixo->SetInstrument(vozBateria,BATERIA_CANAL);
     cout << "antes do for batera: " << materialBaixo->NumberOfNotes() << endl;
     for(int i = 0; i < materialBaixo->NumberOfNotes(0); i++){
-        // cout << "batera for: " << i << endl;
         MuNote n = materialBaixo->GetNote(i);
         MuNote beat;
 
-        if(i == materialBaixo->NumberOfNotes(0)-1){
+        if(i == 0){
             beat = caixa;
         } else {
             beat = bumbo;
@@ -32,19 +31,46 @@ void Baterista::GerarAcompanhamento(){
         
         beat.SetDur(n.Dur());
         beat.SetStart(n.Start());
-        materialBaixo->IncludeNote(canalBateria, beat);
+        materialBaixo->IncludeNote(vozBateria, beat);
     }
-    materialBaixo->Show();
+    // materialBaixo->Show();
 }
 
 void Baterista::GerarBatidas(){
+    // Ajustar para uso em GeneralMIDI
     cout << "Gerando o material do baterista..." << endl;
 
-    bumbo.SetAmp(0.5f);
-    bumbo.SetPitch(BATERIA_INSTRUMENTO_A);
-    bumbo.SetInstr(BATERIA_INSTRUMENTO_A);
-    caixa.SetAmp(0.5f);
-    caixa.SetPitch(BATERIA_INSTRUMENTO_B);
-    caixa.SetInstr(BATERIA_INSTRUMENTO_B);
+    bumbo.SetAmp(BATERIA_VOLUME);
+    bumbo.SetPitch(BATERIA_INSTRUMENTO_BUMBO);
+    bumbo.SetInstr(BATERIA_CANAL);
+
+    caixa.SetAmp(BATERIA_VOLUME);
+    caixa.SetPitch(BATERIA_INSTRUMENTO_CAIXA);
+    caixa.SetInstr(BATERIA_CANAL);
+    
+    surdo.SetAmp(BATERIA_VOLUME);
+    surdo.SetPitch(BATERIA_INSTRUMENTO_SURDO);
+    surdo.SetInstr(BATERIA_CANAL);
+    
+    tomL.SetAmp(BATERIA_VOLUME);
+    tomL.SetPitch(BATERIA_INSTRUMENTO_TOM_L);
+    tomL.SetInstr(BATERIA_CANAL);
+    
+    tomH.SetAmp(BATERIA_VOLUME);
+    tomH.SetPitch(BATERIA_INSTRUMENTO_TOM_H);
+    tomH.SetInstr(BATERIA_CANAL);
+    
+
+    chimbau.SetAmp(BATERIA_VOLUME);
+    chimbau.SetPitch(BATERIA_INSTRUMENTO_CHIMBAU);
+    chimbau.SetInstr(BATERIA_CANAL);
+    
+    crash.SetAmp(BATERIA_VOLUME);
+    crash.SetPitch(BATERIA_INSTRUMENTO_CRASH);
+    crash.SetInstr(BATERIA_CANAL);
+    
+    conducao.SetAmp(BATERIA_VOLUME);
+    conducao.SetPitch(BATERIA_INSTRUMENTO_CONDUCAO);
+    conducao.SetInstr(BATERIA_CANAL);
     
 }

@@ -16,7 +16,7 @@ void Guitarrista::CarregarMaterialBaixo(MuMaterial* materialBaixo){
 void Guitarrista::GerarAcompanhamento(){
     cout << "Gerando o acompanhamento do guitarrista..." << endl;
     materialBaixo->AddVoices(1);
-    materialBaixo->SetInstrument(1,GUITARRA_INSTRUMENTO);
+    materialBaixo->SetInstrument(1,GUITARRA_CANAL);
     int notas = materialBaixo->NumberOfNotes();
     for(int i = 0; i < notas; i++){
         MuNote n = materialBaixo->GetNote(i);
@@ -34,39 +34,38 @@ void Guitarrista::GerarAcompanhamento(){
                 if(noteChord.Pitch()%12 == n.Pitch()%12){
                     MuMaterial triade = acordes.GetVoice(k);
                     triade.SetAmp(0,1);
-                    //triade.SetInstrument(0,GUITARRA_INSTRUMENTO);
+                    //triade.SetInstrument(0,GUITARRA_CANAL);
                     //triade.SetStarts(0, n.Start());
                     triade.SetLengths(0,n.Dur());
 
                     for(int l = 0; l < triade.NumberOfNotes(0); l++){
                         noteChord = triade.GetNote(0, l);
                         noteChord.SetStart(n.Start());
-                        // noteChord.SetInstr(GUITARRA_INSTRUMENTO);
+                        noteChord.SetInstr(GUITARRA_CANAL);
                         materialBaixo->IncludeNote(1, noteChord);
                         
                         // note.SetPitch(inPitch);
                         // triade.SetNote(1, l, note);
                     }
-                    //triade.Show();
-                    // out.Play(triade,PLAYBACK_MODE_NORMAL);
                     encontrouNota = true;
                 }
             }
         }
     }
-    materialBaixo->Show();
+    // materialBaixo->Show();
 }
 
 void Guitarrista::GerarAcordes(){
     cout << "Gerando o material do guitarrista..." << endl;
     MuMaterial triade;
+    triade.MajorTriad(1);
     for(int i = 1; i <= 7; i++){
-        triade.Clear();
-        triade.MajorTriad(1);
+        // triade.Clear();
         triade.DiatonicTranspose(C_NAT, MAJOR_MODE, i, ASCENDING);
         acordes += triade;
     }
-    acordes.SetInstrument(0, GUITARRA_INSTRUMENTO);
+    // setar timbre do canal midi com função separada 0xC[0-F] (ver setMIDI no tg)
+    acordes.SetInstrument(0, GUITARRA_CANAL);
     acordes = acordes.Segments(7);
     triade.Clear();
     
