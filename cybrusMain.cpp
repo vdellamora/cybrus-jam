@@ -20,12 +20,13 @@ double currTime(void){
     return stamp;
 }
 
-int main(){
+int main(int argc, char *argv[]){
     //--------------Menu Inicial (parâmetros da sessão), opções de execução
     cout << "CybrusJam v0.1 -- Acompanhamento Musical" << endl;
     cout << "Carregando componentes..." << endl;
     MuRecorder input;
-    int baixoPortaMIDI, saidaPortaMIDI, pulsacoes;
+    int baixoPortaMIDI = -1, saidaPortaMIDI = -1, pulsacoes = -1;
+    string ehCSound = "x"; bool MIDIcsound = false;
     MuMIDIBuffer inputBuffer;
     MuPlayer output;
     BaixoAnalise* bAnalise;
@@ -33,10 +34,29 @@ int main(){
     Baterista* bateria;
 
 
+
+    // Verifica se foram usados argumentos na chamada do programa, para iniciar mais rapidamente os atributos de entrada, saída e pulsações.
+    if(argc > 1){
+        baixoPortaMIDI = atoi(argv[1]);
+        if(argc > 2){
+            saidaPortaMIDI = atoi(argv[2]);
+            if(argc > 3){
+                pulsacoes = atoi(argv[3]);
+                if(argc > 4){
+                    ehCSound = argv[4];
+                    MIDIcsound = ((ehCSound == "s") || (ehCSound == "S"));
+                }
+            }
+        }
+    }
+
+
     cout  << "Carregando Recorder..." << endl;
     input.Init(100);
-    cout << "Insira a porta MIDI para a entrada do baixo: ";
-    cin >> baixoPortaMIDI;
+    if(baixoPortaMIDI == -1){
+        cout << "Insira a porta MIDI para a entrada do baixo: ";
+        cin >> baixoPortaMIDI;
+    }
     input.SelectMIDISource(baixoPortaMIDI);
 
     cout << "Carregando buffer..." << endl;
@@ -46,13 +66,16 @@ int main(){
 
     cout << "Carregando Player..." << endl;
     output.Init();
-    cout << "Insira a porta MIDI para a saída do acompanhamento: ";
-    cin >> saidaPortaMIDI;
+    if(saidaPortaMIDI == -1){
+        cout << "Insira a porta MIDI para a saída do acompanhamento: ";
+        cin >> saidaPortaMIDI;
+    }
     output.SelectMIDIDestination(saidaPortaMIDI);
-    cout << "A saída MIDI é relacionada a CSound? (S/N) ";
-    string ehCSound; bool MIDIcsound = false;
-    cin >> ehCSound;
-    if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
+    if(ehCSound == "x"){
+        cout << "A saída MIDI é relacionada a CSound? (S/N) ";
+        cin >> ehCSound;
+        if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
+    }
 
     usleep(500);
     while(!MIDIcsound){
@@ -93,8 +116,10 @@ int main(){
     }
     usleep(500);
 
-    cout << "Insira a quantidade de pulsações desejada para a análise: ";
-    cin >> pulsacoes;
+    if(pulsacoes == -1){
+        cout << "Insira a quantidade de pulsações desejada para a análise: ";
+        cin >> pulsacoes;
+    }
 
     //---Tradução do Baixo -> MIDI
         // O patch de PureData "ProjetoCybrusJam-MidiConverter", por José de Abreu Bacelar faz a conversão em MIDI, numa porta ALSA MIDI
