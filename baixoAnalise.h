@@ -10,7 +10,10 @@ using namespace std;
 class BaixoAnalise{
     private:
         MuMaterial* materialMusical;
+        
         double duracaoMaterial;
+        double duracaoPulsacao;
+        int    pulsacoesMaterial;
 
     public:
         BaixoAnalise();
@@ -18,9 +21,15 @@ class BaixoAnalise{
         ~BaixoAnalise();
 
         void CarregarFase1(MuMIDIBuffer);
+        void AnaliseFase1();
         void AnaliseFase1(int);
+
         MuMaterial* GetMaterial();
+        int GetPulsacoes();
         double GetDuracao();
+        double GetDuracaoPulsacao();
+        
+        void PrepararReproducao();
         void ImprimirMaterial();
     
 

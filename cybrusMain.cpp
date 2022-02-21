@@ -20,12 +20,28 @@ double currTime(void){
     return stamp;
 }
 
+// Temporário até ser incluído na próxima versão da biblioteca MuM
+// Função para mostrar o status e dados de uma mensagem MIDI
+void ShowMIDIMessage(MuMIDIMessage msg){
+    cout << hex;
+    cout << "[STATUS]: " << (int)msg.status << " ";
+    cout << "[DATA1]: " << (int)msg.data1 << " ";
+    cout << "[DATA2]: " << (int)msg.data2 << endl;
+    cout << dec;
+}
+
+// Temporário até ser incluído na próxima versão da biblioteca MuM
+// Função para "remover" o canal de onde veio uma mensagem MIDI
+void RemoveChannel(MuMIDIMessage& msg){
+    msg.status &= 0xF0;
+}
+
 int main(int argc, char *argv[]){
     //--------------Menu Inicial (parâmetros da sessão), opções de execução
     cout << "CybrusJam v0.1 -- Acompanhamento Musical" << endl;
     cout << "Carregando componentes..." << endl;
-    MuRecorder input;
-    int baixoPortaMIDI = -1, saidaPortaMIDI = -1, pulsacoes = -1;
+    MuRecorder input, pedal;
+    int baixoPortaMIDI = -1, saidaPortaMIDI = -1, pulsacoes = -1, pedalPortaMIDI = -1;
     string ehCSound = "x"; bool MIDIcsound = false;
     MuMIDIBuffer inputBuffer;
     MuPlayer output;
@@ -39,9 +55,9 @@ int main(int argc, char *argv[]){
     if(argc > 1){
         baixoPortaMIDI = atoi(argv[1]);
         if(argc > 2){
-            saidaPortaMIDI = atoi(argv[2]);
+            pedalPortaMIDI = atoi(argv[2]);
             if(argc > 3){
-                pulsacoes = atoi(argv[3]);
+                saidaPortaMIDI = atoi(argv[3]);
                 if(argc > 4){
                     ehCSound = argv[4];
                     MIDIcsound = ((ehCSound == "s") || (ehCSound == "S"));
@@ -58,6 +74,17 @@ int main(int argc, char *argv[]){
         cin >> baixoPortaMIDI;
     }
     input.SelectMIDISource(baixoPortaMIDI);
+
+    // Selecionando porta MIDI do pedal
+    pedal.Init(100);
+    if(pedalPortaMIDI == -1){
+        cout << "Insira a porta MIDI utilizada pelo pedal: ";
+        cin >> pedalPortaMIDI;
+    }
+    pedal.SelectMIDISource(pedalPortaMIDI);
+    // Selecionando porta MIDI do pedal
+
+
 
     cout << "Carregando buffer..." << endl;
     inputBuffer.max = 0;
@@ -116,10 +143,10 @@ int main(int argc, char *argv[]){
     }
     usleep(500);
 
-    if(pulsacoes == -1){
-        cout << "Insira a quantidade de pulsações desejada para a análise: ";
-        cin >> pulsacoes;
-    }
+    // if(pulsacoes == -1){
+    //     cout << "Insira a quantidade de pulsações desejada para a análise: ";
+    //     cin >> pulsacoes;
+    // }
 
     //---Tradução do Baixo -> MIDI
         // O patch de PureData "ProjetoCybrusJam-MidiConverter", por José de Abreu Bacelar faz a conversão em MIDI, numa porta ALSA MIDI
@@ -135,6 +162,12 @@ int main(int argc, char *argv[]){
     materialFase1.max = 0;
     materialFase1.count = 0;
     materialFase1.data = NULL;
+    MuMIDIBuffer bufferPedal; // Buffer pro pedal
+    bufferPedal.max = 0;
+    bufferPedal.count = 0;
+    bufferPedal.data = NULL;
+
+    bool pedalPressionado = false;
     materialFase1 = input.GetData();
     cout << "Iniciando sessão (aperte Ctrl+C para cancelar)" << endl;
     while(!terminaExecucao){
@@ -142,9 +175,12 @@ int main(int argc, char *argv[]){
 
         // Caso haja mensagens no buffer, começa a receber as notas
         inputBuffer = input.GetData();
+        bufferPedal = pedal.GetData();
+
         // MuMIDIBuffer temp = joinMidi...
         materialFase1 = MuRecorder::JoinMIDIBuffers(materialFase1, inputBuffer); // possível memory leak
         // chamar delete [] pros datas dos buffers
+        
         if(inputBuffer.count){
             MuMIDIMessage msg;
             for(int i = 0; i < inputBuffer.count; i++){
@@ -156,21 +192,22 @@ int main(int argc, char *argv[]){
                     contagemNotas++;
                     
                     // Controle de qual nota é tocada
-                    short inPitch = msg.data1 % 12; // Definição da altura da nota recebida
-                    string nomesNotas[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-                    cout << "Nota recebida: " << nomesNotas[inPitch] << endl;
+                    short inPitch = (2 + msg.data1) % 12; // Definição da altura da nota recebida
+                    string nomesNotas[12] = {"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
+                    cout << "Nota recebida: " << inPitch << " " << nomesNotas[inPitch] << (int) msg.data1 << endl;
 
                 }
 
-                // Conta as notas. Quando for igual a quantidade de notas esperadas e receber o desligamento de uma nota, manda pra análise
                 //---Análise do MIDI, reconhecimento de ritmo e altura
                     // As notas recebidas receberão uma classificação de prioridade, com base na sua proximidade da batida do metrônomo
                     // Notas mais próximas (com maior prioridade) serão as responsáveis por moldar os acordes
                     // O distanciamento entre notas será armazenado também, para que se monte uma percussão adequada
-                if(contagemNotas >= pulsacoes){
+
+                
+                // Quando o pedal enviar o sinal e o buffer receber o desligamento de uma nota, finaliza fase 1 e manda pra análise
+                if(pedalPressionado){
                     if((msg.status == MU_NOTE_OFF) || (msg.data2 == 0)){
                         terminaExecucao = true;
-                        
                     }
                 }
 
@@ -178,13 +215,28 @@ int main(int argc, char *argv[]){
             }
         }
 
+        // Verificar se o pedal foi pressionado, para finalizar a Fase 1
+        if(bufferPedal.count){
+            MuMIDIMessage msgPedal;
+            for(int i = 0; i < bufferPedal.count; i++){
+                msgPedal = bufferPedal.data[i];
+
+                RemoveChannel(msgPedal);
+                if((msgPedal.status == MU_CONTROL)){
+                    pedalPressionado = true; // Envia o sinal para a última nota ser a finalização da análise
+                    // terminaExecucao = true;
+                }
+            }
+
+        }
+
 
     }
 
     // Setar as vozes de cada instrumento por constante, na criação do bAnalise
     bAnalise = new BaixoAnalise(materialFase1);
+    bAnalise->AnaliseFase1();
     bAnalise->ImprimirMaterial();
-    bAnalise->AnaliseFase1(pulsacoes);
 
     //Pensar em trabalhar com as classes estáticas, inclusive o MuMaterial do baixo
     // Utilizar herança pros instrumentos
@@ -195,8 +247,8 @@ int main(int argc, char *argv[]){
         // As notas recebidas terão classificação da prioridade, altura e distância uma da outra, para que possa ser feita --
         // -- uma busca detalhada no banco de materiais para encontrar algo que encaixe
         // Ao encontrar algo que encaixe na sessão, é montado o material para ser tocado no MuPlayer
-    guitarra = new Guitarrista(bAnalise->GetMaterial());
-    guitarra->GerarAcompanhamento();
+    //guitarra = new Guitarrista(bAnalise->GetMaterial(), bAnalise->GetDuracaoPulsacao(), bAnalise->GetPulsacoes());
+    //guitarra->GerarAcompanhamento();
 
 
     //---Montar percussão de acompanhamento
@@ -204,10 +256,11 @@ int main(int argc, char *argv[]){
         // Ao receber notas do baixo, a classe irá procurar ritmos que façam sentido, no seu banco de materiais musicais
         // As notas recebidas terão classificação de prioridade e distância entre elas, para buscar algo que encaixe na sessão
         // Ao encontrar material correspondente ao ritmo do baixo, é montado o material de saída para tocar no MuPlayer
-    bateria = new Baterista(bAnalise->GetMaterial());
+    bateria = new Baterista(bAnalise->GetMaterial(), bAnalise->GetDuracaoPulsacao(), bAnalise->GetPulsacoes());
     bateria->GerarAcompanhamento();
 
 
+    bAnalise->PrepararReproducao();
     bAnalise->ImprimirMaterial();
     // Fase 2 - Acompanhamento
     //---Metrônomo tocando
@@ -225,7 +278,11 @@ int main(int argc, char *argv[]){
     inputBuffer.data = NULL;
 
     cout << "Iniciando acompanhamento (fique 5 segundos sem tocar para finalizar)" << endl;
-    output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
+    if(!MIDIcsound){
+        output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
+    } else {
+        // bAnalise->GetMaterial()->PlaybackWithCsound("acompanhamento");
+    }
     double inicioPlayer = currTime();
     double ultimaNota = currTime();
     while(!terminaExecucao){
@@ -275,7 +332,7 @@ int main(int argc, char *argv[]){
     delete [] inputBuffer.data;
     delete [] materialFase1.data;
     free(bAnalise);
-    free(guitarra);
+    // free(guitarra);
     free(bateria);
     return 0;
 }
