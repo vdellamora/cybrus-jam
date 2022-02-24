@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
         if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
     }
 
-    usleep(500);
+    // usleep(500);
     while(!MIDIcsound){
         MuMIDIBuffer programChanges;
         programChanges.data = new MuMIDIMessage[4];
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    usleep(500);
+    // usleep(500);
 
     // if(pulsacoes == -1){
     //     cout << "Insira a quantidade de pulsações desejada para a análise: ";

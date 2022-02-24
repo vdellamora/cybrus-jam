@@ -47,7 +47,7 @@ void Baterista::GerarAcompanhamento(){
     // 2: rapido
     // 3: rapidoFirst
     int primeiraBatida, restoBatidas;
-    if(bpm >= 440){
+    if(bpm >= 330){
         // Usa as batidas rápidas
         primeiraBatida = 3;
         restoBatidas = 2;

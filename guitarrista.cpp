@@ -63,7 +63,7 @@ void Guitarrista::GerarAcompanhamento(){
     int vozHarmoniaAlt = -1;
 
 
-    if(bpm > 400){
+    if(bpm > 300){
         // rapido
         pulsacaoAlternativa = 0;
         vozHarmonia = 4; vozHarmoniaAlt = 4;
