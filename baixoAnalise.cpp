@@ -8,7 +8,7 @@ BaixoAnalise::BaixoAnalise(){
 }
 BaixoAnalise::BaixoAnalise(MuMIDIBuffer buffer){
     duracaoMaterial = 0;
-    cout << "baixoAnalise iniciado" << endl;
+    // cout << "baixoAnalise iniciado" << endl;
     materialMusical = new MuMaterial();
     this->CarregarFase1(buffer);
 }
@@ -16,10 +16,10 @@ BaixoAnalise::~BaixoAnalise(){}
 
 
 void BaixoAnalise::CarregarFase1(MuMIDIBuffer buffer){
-    cout << "baixoAnalise carregando Fase1" << endl;
+    // cout << "baixoAnalise carregando Fase1" << endl;
     materialMusical->LoadMIDIBuffer(buffer, MIDI_BUFFER_MODE_EXTEND);
     //LoadMidiBuffer materialFase1
-    cout << "baixoAnalise Fase1 Carregada" << endl;
+    // cout << "baixoAnalise Fase1 Carregada" << endl;
 }
 
 //---Análise do MIDI, reconhecimento de ritmo e altura
@@ -81,16 +81,16 @@ void BaixoAnalise::AnaliseFase1(){
     for(int j = 0; j < notas; j++){
         n = materialMusical->GetNote(j);
 
-        cout << "Nota: " << j << "\t dN: " << n.Start() << "\t dE: " << duracaoEsperada;
+        // cout << "Nota: " << j << "\t dN: " << n.Start() << "\t dE: " << duracaoEsperada;
 
         if((n.Start() >= duracaoEsperada - duracaoPulsacao/10) && (n.Start() <= duracaoEsperada + duracaoPulsacao/10)){
             n.SetAmp(0.1);
             materialMusical->SetNote(0,j,n);
             duracaoEsperada += duracaoPulsacao;
             
-            cout << " OK";
+            // cout << " OK";
         }
-        cout << endl;
+        // cout << endl;
     }
     cout << "Pulsações definidas: " << pulsacoesMaterial << endl;
     cout << "Duração de pulsação: " << duracaoPulsacao << endl;

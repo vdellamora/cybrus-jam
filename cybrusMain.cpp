@@ -8,8 +8,8 @@ using namespace std;
 #include "guitarrista.h"
 #include "baterista.h"
 
-#define GUITARRA_INSTRUMENTO 31
-#define BATERIA_INSTRUMENTO 1
+#define GUITARRA_INSTRUMENTO 0x1f
+#define BATERIA_INSTRUMENTO 0x01
 
 
 // Função que retorna o tempo atual do sistema
@@ -22,11 +22,11 @@ double currTime(void){
 
 // Temporário até ser incluído na próxima versão da biblioteca MuM
 // Função para mostrar o status e dados de uma mensagem MIDI
-void ShowMIDIMessage(MuMIDIMessage msg){
+void ShowMIDIMessage(MuMIDIMessage* msg){
     cout << hex;
-    cout << "[STATUS]: " << (int)msg.status << " ";
-    cout << "[DATA1]: " << (int)msg.data1 << " ";
-    cout << "[DATA2]: " << (int)msg.data2 << endl;
+    cout << "[STATUS]: " << (int)msg->status << " ";
+    cout << "[DATA1]: " << (int)msg->data1 << " ";
+    cout << "[DATA2]: " << (int)msg->data2 << endl;
     cout << dec;
 }
 
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
         if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
     }
 
-    usleep(500);
+    // usleep(500);
     while(!MIDIcsound){
         MuMIDIBuffer programChanges;
         programChanges.data = new MuMIDIMessage[4];
@@ -133,6 +133,7 @@ int main(int argc, char *argv[]){
             programChanges.data[3].data1 = BATERIA_INSTRUMENTO;
             programChanges.data[3].data2 = BATERIA_INSTRUMENTO;
 
+            // ShowMIDIMessage(programChanges.data);
             if (!output.SendEvents(programChanges)){
                 cout << "Erro ao configurar canais/instrumentos." << endl;
                 return -1;
@@ -141,7 +142,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    usleep(500);
+    // usleep(500);
 
     // if(pulsacoes == -1){
     //     cout << "Insira a quantidade de pulsações desejada para a análise: ";
@@ -177,22 +178,19 @@ int main(int argc, char *argv[]){
         inputBuffer = input.GetData();
         bufferPedal = pedal.GetData();
 
-        // MuMIDIBuffer temp = joinMidi...
-        materialFase1 = MuRecorder::JoinMIDIBuffers(materialFase1, inputBuffer); // possível memory leak
-        // chamar delete [] pros datas dos buffers
         
         if(inputBuffer.count){
             MuMIDIMessage msg;
             for(int i = 0; i < inputBuffer.count; i++){
                 msg = inputBuffer.data[i];
 
-
                 // Lê e analisa a nota
                 if((msg.status == MU_NOTE_ON) && (msg.data2 > 0)){
                     contagemNotas++;
                     
                     // Controle de qual nota é tocada
-                    short inPitch = (2 + msg.data1) % 12; // Definição da altura da nota recebida
+                    msg.data1 += 2;
+                    short inPitch = (msg.data1) % 12; // Definição da altura da nota recebida
                     string nomesNotas[12] = {"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
                     cout << "Nota recebida: " << inPitch << " " << nomesNotas[inPitch] << (int) msg.data1 << endl;
 
@@ -214,6 +212,9 @@ int main(int argc, char *argv[]){
 
             }
         }
+        // MuMIDIBuffer temp = joinMidi...
+        materialFase1 = MuRecorder::JoinMIDIBuffers(materialFase1, inputBuffer); // possível memory leak
+        // chamar delete [] pros datas dos buffers
 
         // Verificar se o pedal foi pressionado, para finalizar a Fase 1
         if(bufferPedal.count){
@@ -236,7 +237,7 @@ int main(int argc, char *argv[]){
     // Setar as vozes de cada instrumento por constante, na criação do bAnalise
     bAnalise = new BaixoAnalise(materialFase1);
     bAnalise->AnaliseFase1();
-    bAnalise->ImprimirMaterial();
+    // bAnalise->ImprimirMaterial();
 
     //Pensar em trabalhar com as classes estáticas, inclusive o MuMaterial do baixo
     // Utilizar herança pros instrumentos
@@ -247,8 +248,8 @@ int main(int argc, char *argv[]){
         // As notas recebidas terão classificação da prioridade, altura e distância uma da outra, para que possa ser feita --
         // -- uma busca detalhada no banco de materiais para encontrar algo que encaixe
         // Ao encontrar algo que encaixe na sessão, é montado o material para ser tocado no MuPlayer
-    //guitarra = new Guitarrista(bAnalise->GetMaterial(), bAnalise->GetDuracaoPulsacao(), bAnalise->GetPulsacoes());
-    //guitarra->GerarAcompanhamento();
+    guitarra = new Guitarrista(bAnalise->GetMaterial(), bAnalise->GetDuracaoPulsacao(), bAnalise->GetPulsacoes());
+    guitarra->GerarAcompanhamento();
 
 
     //---Montar percussão de acompanhamento
@@ -262,12 +263,12 @@ int main(int argc, char *argv[]){
 
     bAnalise->PrepararReproducao();
     bAnalise->ImprimirMaterial();
+
     // Fase 2 - Acompanhamento
     //---Metrônomo tocando
         // A classe "metrônomo" servirá para ajustar o BPM da sessão e tocar o metrônomo (independente da bateria)
         // Será enviado pro MuPlayer um metrônomo simples com base no BPM atual da sessão
         // De acordo com o controle do pedal de ritmo, o usuário poderá ajustar o BPM da sessão conforme desejar
-
 
 
     //---Acordes e Percussão -> MuPlayer
@@ -332,7 +333,7 @@ int main(int argc, char *argv[]){
     delete [] inputBuffer.data;
     delete [] materialFase1.data;
     free(bAnalise);
-    // free(guitarra);
+    free(guitarra);
     free(bateria);
     return 0;
 }
