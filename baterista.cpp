@@ -16,7 +16,7 @@ void Baterista::CarregarMaterialBaixo(MuMaterial* materialBaixo, double duracaoP
 }
 
 void Baterista::GerarAcompanhamento(){
-    cout << "Gerando o acompanhamento do baterista..." << endl;
+    // cout << "Gerando o acompanhamento do baterista..." << endl;
     materialBaixo->AddVoices(1);
     int vozBateria = materialBaixo->NumberOfVoices()-1;
 
@@ -47,7 +47,7 @@ void Baterista::GerarAcompanhamento(){
     // 2: rapido
     // 3: rapidoFirst
     int primeiraBatida, restoBatidas;
-    if(bpm >= 90){
+    if(bpm >= 440){
         // Usa as batidas rápidas
         primeiraBatida = 3;
         restoBatidas = 2;
@@ -78,7 +78,7 @@ void Baterista::GerarAcompanhamento(){
 
 void Baterista::GerarBatidas(){
     // Ajustar para uso em GeneralMIDI
-    cout << "Gerando o material do baterista..." << endl;
+    // cout << "Gerando o material do baterista..." << endl;
 
     bumbo.SetAmp(1);
     bumbo.SetPitch(BATERIA_INSTRUMENTO_BUMBO);

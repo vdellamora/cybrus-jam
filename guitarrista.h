@@ -10,13 +10,20 @@ using namespace std;
 class Guitarrista{
     private:
         MuMaterial* materialBaixo;
+
         MuMaterial acordes;
+        MuMaterial powerChords;
+        MuMaterial ritmosPalhetadas;
+
+        double durPulsBx;
+        int pulsBx;
+
     public:
         Guitarrista();
-        Guitarrista(MuMaterial*);
+        Guitarrista(MuMaterial*, double, int);
         ~Guitarrista();
 
-        void CarregarMaterialBaixo(MuMaterial*);
+        void CarregarMaterialBaixo(MuMaterial*, double, int);
         void GerarAcompanhamento();
         void GerarAcordes();
     

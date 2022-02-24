@@ -1,50 +1,19 @@
 #include <iostream>
 using namespace std;
-#include "MuPlayer.h"
-#include "MuRecorder.h"
-#include "Metronome.h"
+#include "MuM/MuPlayer.h"
+#include "MuM/MuRecorder.h"
 
-// PROTOTYPES ==========================================
+MuMaterial ConstruirPadroesRitmicos(void);
 
-// Builds music for one beat using  requested chord
-MuMaterial BuildOneBeat(MuMaterial chord);
-
-// gets current system time in seconds
-double Now(void);
-// =====================================================
-
-// CONSTANTS ===========================================
-
-const int BEATS_PER_MEASURE = 4;
-
-// =====================================================
-
-int main(void)
-{
-    cout << "Generating chords..." << endl;
-    MuMaterial chords,triad;
-    int chordProgression[BEATS_PER_MEASURE] = {0,0,3,4};
-    int nextChord = 0;
+int main(void){
+    MuMaterial acordes,triade,ritmos;
+    bool done = false;
+    bool noteFound = false;
     
-    for(int i = 1; i <= 7; i++)
-    {
-        triad.Clear();
-        triad.MajorTriad(1);
-        triad.DiatonicTranspose(C_NAT, MAJOR_MODE, i, ASCENDING);
-        chords += triad;
-    }
-    chords.SetInstrument(0, 1);
+    ritmos = ConstruirPadroesRitmicos();
+    ritmos.SetInstrument(0, 2);
     
-    cout << "Placing chords in separate voices..." << endl;
-    chords = chords.Segments(7);
-    
-    cout << "Setting up Metronome..." << endl;
-    Metronome met;
-    met.SetLatitude(1.0);
-    met.SetInitialBPM(60);
-    double endOfBeat = 0;
-    
-    cout  << "Loading Recorder..." << endl;
+    cout  << "Carregando Recorder..." << endl;
     MuRecorder in;
     in.Init(100);
     in.SelectMIDISource(1);
@@ -53,102 +22,107 @@ int main(void)
     inBuff.count = 0;
     inBuff.data = NULL;
     
-    cout << endl << "Loading Player..." << endl;
+    cout << endl << "Carregando Player..." << endl;
     MuPlayer out;
     out.Init();
-     
-    cout << "Starting playback and waiting for pedal events..." << endl;
-    MuMaterial beat;
-    while(true)
-    {
+    
+    cout << "Gerando os acordes..." << endl;
+    for(int i = 1; i <= 7; i++){
+        triade.Clear();
+        triade.MajorTriad(1);
+        triade.DiatonicTranspose(C_NAT, MAJOR_MODE, i, ASCENDING);
+        acordes += triade;
+    }
+    acordes.SetInstrument(0, 1);
+    triade.Clear();
+    //acordes.Show();
+    //out.Play(ritmos,PLAYBACK_MODE_NORMAL);
+    
+    cout << endl << "Colocando os acordes em vozes separadas..." << endl;
+    acordes = acordes.Segments(7);
+    //acordes.Show();
+    
+    cout << endl << "Ouvindo..." << endl;
+    
+    while(!done){
         usleep(100);
-        
-        // If we are starting playback, play current beat
-        // and remember when it ends...
-        if(endOfBeat == 0)
-        {
-            beat = BuildOneBeat(chords.GetVoice(chordProgression[nextChord]));
-            nextChord++;
-            if(nextChord >= BEATS_PER_MEASURE)
-                nextChord = 0;
-            beat.Scale(met.Tempo());
-            out.Play(beat, PLAYBACK_MODE_NORMAL);
-            endOfBeat = Now() + beat.Dur();
-        }
-        else
-        {
-            // If beat has ended, we flag so that
-            // next time wround we play the next beat...
-            if(Now() >= endOfBeat)
-            {
-                endOfBeat = 0.0;
-            }
-        }
-        
         inBuff = in.GetData();
-        if(inBuff.count > 0)
-        {
+        if(inBuff.count > 0){
             MuMIDIMessage msg;
-            for(int i = 0; i < inBuff.count; i++)
-            {
+            for(int i = 0; i < inBuff.count; i++){
                 msg = inBuff.data[i];
                 //ShowMIDIMessage(msg);
                 RemoveChannel(msg);
                 
-                if((msg.status == MU_CONTROL) && (msg.data1 == 0x10))
-                {
-                    met.NewStamp(msg.time);
+                if((msg.status == MU_NOTE_ON) && (msg.data2 > 0)){
+                    short inPitch = msg.data1;
+
+                    for(int j = 0; j < acordes.NumberOfVoices(); j ++){
+                        MuNote note;
+                        long n = acordes.NumberOfNotes(j);
+                        for(int k = 0; k < n; k++){
+                            note = acordes.GetNote(j,k);
+                            
+                            if(note.Pitch() == MIDIToPitchClass(inPitch)){
+                                triade = acordes.GetVoice(j);
+                                triade.SetAmp(0,0.3);
+                                triade.SetInstrument(0,2);
+                                triade.SetLengths(0,1);
+                                triade.SetVoice(1,ritmos,0);
+                                triade.SetInstrument(1,1);
+                                triade.SetAmp(1,0.9);
+                                for(int l = 0; l < triade.NumberOfNotes(1); l++){
+                                    note = triade.GetNote(1, l);
+                                    note.SetPitch(inPitch);
+                                    triade.SetNote(1, l, note);
+                                }
+                                //triade.Show();
+                                out.Play(triade,PLAYBACK_MODE_NORMAL);
+                                noteFound = true;
+                                break;
+                            }
+                        }
+                        if(noteFound){
+                            noteFound = false;
+                            break;
+                        }
+                            
+                    }
+                }
+                
+                if((msg.status == MU_CONTROL) && (msg.data1 == 0x10)){
+                    done = true;
                 }
             }
+            // releasing buffer memory...
+            if(inBuff.data)
+                delete [] inBuff.data;
+            inBuff.count = 0;
+            inBuff.max = 0;
         }
     }
-    
+    out.Stop();
     return 0;
 }
 
-MuMaterial BuildOneBeat(MuMaterial chord)
-{
-    //cout << "Building Rhythm..." << endl;
-    MuMaterial rhythm,beat;
-    MuNote rhythmNote,chordNote;
+MuMaterial ConstruirPadroesRitmicos(void){
+    MuMaterial temp;
     
-    // define note
-    rhythmNote.SetInstr(2);
-    rhythmNote.SetStart(0);
-    rhythmNote.SetPitch(48);
-    rhythmNote.SetAmp(1.0);
+    MuNote nota;
+   
+    nota.SetPitch(48);
+    nota.SetAmp(1.0);
+    nota.SetStart(0);
+    nota.SetInstr(1);
     
-    // define durations
-    // (sixteenth-sixteenth-eight)
-    rhythmNote.SetDur(0.25);
-    rhythm += rhythmNote;
-    rhythmNote.SetDur(0.25);
-    rhythm += rhythmNote;
-    rhythmNote.SetDur(0.5);
-    rhythm += rhythmNote;
+    // one beat...
+    nota.SetDur(0.25);
+    temp += nota;
+    nota.SetDur(0.25);
+    temp += nota;
+    nota.SetDur(0.5);
+    temp += nota;
     
-    //cout << "Assembling beat..." << endl;
-    // For each rhythm duration, add each of
-    // the chord's notes
-    for(int i = 0 ; i < rhythm.NumberOfNotes(); i++)
-    {
-        rhythmNote = rhythm.GetNote(i);
-        for(int j = 0; j < chord.NumberOfNotes(); j++)
-        {
-            chordNote = chord.GetNote(j);
-            rhythmNote.SetPitch(chordNote.Pitch());
-            rhythmNote.SetInstr(2);
-            beat.AddNote(0,rhythmNote);
-        }
-    }
-    
-    return beat;
+    return temp;
 }
 
-double Now(void)
-{
-    timeval t;
-    gettimeofday(&t, 0);
-    double stamp = t.tv_sec + (t.tv_usec/1000000.0);
-    return stamp;
-}
