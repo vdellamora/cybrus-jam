@@ -8,7 +8,7 @@ BaixoAnalise::BaixoAnalise(){
 }
 BaixoAnalise::BaixoAnalise(MuMIDIBuffer buffer){
     duracaoMaterial = 0;
-    cout << "baixoAnalise iniciado" << endl;
+    // cout << "baixoAnalise iniciado" << endl;
     materialMusical = new MuMaterial();
     this->CarregarFase1(buffer);
 }
@@ -16,10 +16,10 @@ BaixoAnalise::~BaixoAnalise(){}
 
 
 void BaixoAnalise::CarregarFase1(MuMIDIBuffer buffer){
-    cout << "baixoAnalise carregando Fase1" << endl;
+    // cout << "baixoAnalise carregando Fase1" << endl;
     materialMusical->LoadMIDIBuffer(buffer, MIDI_BUFFER_MODE_EXTEND);
     //LoadMidiBuffer materialFase1
-    cout << "baixoAnalise Fase1 Carregada" << endl;
+    // cout << "baixoAnalise Fase1 Carregada" << endl;
 }
 
 //---Análise do MIDI, reconhecimento de ritmo e altura
@@ -33,6 +33,7 @@ void BaixoAnalise::AnaliseFase1(){
     int notasTonicasSelect = 0;
     int notas = materialMusical->NumberOfNotes();
 
+    // Ajustando o tempo inicial do material para 0 em diante
     MuNote n = materialMusical->GetNote(0);
     n.SetStart(0);
     n.SetAmp(0);
@@ -45,9 +46,14 @@ void BaixoAnalise::AnaliseFase1(){
         materialMusical->SetNote(0,i,n);
     }
 
+    materialMusical->Transpose(0); // Correção do PureData
+    materialMusical->Score("output/baixoInput"); // Imprime o arquivo CSound do baixo, input recebido.
+
+    // Pegar a duração total do material, pode ser substituio por materialMusical.Dur();
     n = materialMusical->GetNote(notas-1);
     duracaoMaterial = n.Start() + n.Dur();
 
+    // Variáveis de apoio na marcação de notas tônicas
     float durPuls;
     int notasTonicas;
     float duracaoEsperada;
@@ -75,22 +81,22 @@ void BaixoAnalise::AnaliseFase1(){
     }
 
 
-    // Identificando as notas tônicas através de sua amplitude
+    // Identificando as notas fundamentais através de sua amplitude
     // durPuls = duracaoMaterial / pulsacoesMaterial;
     duracaoEsperada = 0;
     for(int j = 0; j < notas; j++){
         n = materialMusical->GetNote(j);
 
-        cout << "Nota: " << j << "\t dN: " << n.Start() << "\t dE: " << duracaoEsperada;
+        // cout << "Nota: " << j << "\t dN: " << n.Start() << "\t dE: " << duracaoEsperada;
 
         if((n.Start() >= duracaoEsperada - duracaoPulsacao/10) && (n.Start() <= duracaoEsperada + duracaoPulsacao/10)){
             n.SetAmp(0.1);
             materialMusical->SetNote(0,j,n);
             duracaoEsperada += duracaoPulsacao;
             
-            cout << " OK";
+            // cout << " OK";
         }
-        cout << endl;
+        // cout << endl;
     }
     cout << "Pulsações definidas: " << pulsacoesMaterial << endl;
     cout << "Duração de pulsação: " << duracaoPulsacao << endl;
@@ -137,6 +143,7 @@ void BaixoAnalise::PrepararReproducao(){
 void BaixoAnalise::ImprimirMaterial(){
     // cout << "baixoAnalise imprimindo fase1" << endl;
     materialMusical->Show();
+    materialMusical->Score("output/baixoOutput"); // Imprime o arquivo CSound do material inteiro
 }
 
 MuMaterial* BaixoAnalise::GetMaterial(){
