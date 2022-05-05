@@ -63,11 +63,11 @@ void Guitarrista::GerarAcompanhamento(){
     int vozHarmoniaAlt = -1;
 
 
-    if(bpm > 300){
+    if(bpm > 200){
         // rapido
         pulsacaoAlternativa = 0;
         vozHarmonia = 4; vozHarmoniaAlt = 4;
-    } else if(bpm > 120){
+    } else if(bpm > 100){
         // padrão
         pulsacaoAlternativa = 0;
         vozHarmonia = 2; vozHarmoniaAlt = 2;
@@ -206,4 +206,6 @@ void Guitarrista::GerarAcordes(){
     ritmosPalhetadas.SetInstrument(2, GUITARRA_CANAL);
     ritmosPalhetadas.SetInstrument(3, GUITARRA_CANAL);
     ritmosPalhetadas.SetInstrument(4, GUITARRA_CANAL);
+
+    ritmosPalhetadas.Csd("output/guitarraMaterial"); // Imprime o material da guitarra
 }

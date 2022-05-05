@@ -47,7 +47,7 @@ void Baterista::GerarAcompanhamento(){
     // 2: rapido
     // 3: rapidoFirst
     int primeiraBatida, restoBatidas;
-    if(bpm >= 330){
+    if(bpm >= 200){
         // Usa as batidas rápidas
         primeiraBatida = 3;
         restoBatidas = 2;
@@ -190,4 +190,6 @@ void Baterista::GerarBatidas(){
     batidas.SetInstrument(1, 10);
     batidas.SetInstrument(2, 10);
     batidas.SetInstrument(3, 10);
+
+    batidas.Csd("output/bateriaMaterial"); // Imprime o material da bateria
 }

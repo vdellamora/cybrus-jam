@@ -38,11 +38,11 @@ void RemoveChannel(MuMIDIMessage& msg){
 
 int main(int argc, char *argv[]){
     //--------------Menu Inicial (parâmetros da sessão), opções de execução
-    cout << "CybrusJam v0.1 -- Acompanhamento Musical" << endl;
+    cout << "CybrusJam v2.0 -- Acompanhamento Musical para baixistas" << endl;
     cout << "Carregando componentes..." << endl;
     MuRecorder input, pedal;
     int baixoPortaMIDI = -1, saidaPortaMIDI = -1, pulsacoes = -1, pedalPortaMIDI = -1;
-    string ehCSound = "x"; bool MIDIcsound = false;
+    string ehCSound = "n"; bool MIDIcsound = false;
     MuMIDIBuffer inputBuffer;
     MuPlayer output;
     BaixoAnalise* bAnalise;
@@ -82,7 +82,6 @@ int main(int argc, char *argv[]){
         cin >> pedalPortaMIDI;
     }
     pedal.SelectMIDISource(pedalPortaMIDI);
-    // Selecionando porta MIDI do pedal
 
 
 
@@ -98,11 +97,12 @@ int main(int argc, char *argv[]){
         cin >> saidaPortaMIDI;
     }
     output.SelectMIDIDestination(saidaPortaMIDI);
-    if(ehCSound == "x"){
-        cout << "A saída MIDI é relacionada a CSound? (S/N) ";
-        cin >> ehCSound;
-        if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
-    }
+    
+    // if(ehCSound == "x"){
+    //     cout << "A saída MIDI é relacionada a CSound? (S/N) ";
+    //     cin >> ehCSound;
+    //     if ((ehCSound == "s") || (ehCSound == "S"))  MIDIcsound = true;
+    // }
 
     // usleep(500);
     while(!MIDIcsound){
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
             programChanges.max = 4;
             programChanges.count = 4;
             
-            // Canal 2 = Guitarra
+            // Canal 1 = Guitarra
             programChanges.data[0].time = 0;
             programChanges.data[0].status = 0xC0;
             programChanges.data[0].data1 = GUITARRA_INSTRUMENTO;
@@ -122,7 +122,7 @@ int main(int argc, char *argv[]){
             programChanges.data[1].status = 0xC1;
             programChanges.data[1].data1 = GUITARRA_INSTRUMENTO;
             programChanges.data[1].data2 = GUITARRA_INSTRUMENTO;
-            // Canal 2 = Guitarra
+            // Canal 3 = Guitarra
             programChanges.data[2].time = 0;
             programChanges.data[2].status = 0xC2;
             programChanges.data[2].data1 = GUITARRA_INSTRUMENTO;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    // usleep(500);
+    usleep(500);
 
     // if(pulsacoes == -1){
     //     cout << "Insira a quantidade de pulsações desejada para a análise: ";
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
                     contagemNotas++;
                     
                     // Controle de qual nota é tocada
-                    msg.data1 += 2;
+                    msg.data1 += 0;
                     short inPitch = (msg.data1) % 12; // Definição da altura da nota recebida
                     string nomesNotas[12] = {"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
                     cout << "Nota recebida: " << inPitch << " " << nomesNotas[inPitch] << (int) msg.data1 << endl;
@@ -279,11 +279,8 @@ int main(int argc, char *argv[]){
     inputBuffer.data = NULL;
 
     cout << "Iniciando acompanhamento (fique 5 segundos sem tocar para finalizar)" << endl;
-    if(!MIDIcsound){
-        output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
-    } else {
-        // bAnalise->GetMaterial()->PlaybackWithCsound("acompanhamento");
-    }
+    output.Play(* bAnalise->GetMaterial(), PLAYBACK_MODE_NORMAL);
+    
     double inicioPlayer = currTime();
     double ultimaNota = currTime();
     while(!terminaExecucao){
